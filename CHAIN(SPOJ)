@@ -1,0 +1,154 @@
+//Problem Link : https://www.spoj.com/problems/CHAIN/
+
+//Editorial : https://www.quora.com/How-do-I-solve-the-strange-food-chain-question-on-SPOJ 
+//Very good Editorial
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.StringTokenizer;
+
+public class CHAIN_SPOJ_ {
+
+	public static class Pair{
+		int next;
+		int relation;//0 if both belong to same set //1 if both a can eat b // -1 if b can eat a
+		public Pair(int next , int relation) {
+			this.next=next;
+			this.relation=relation;
+		}
+	}
+	
+	public static Pair[] parent;
+	public static int[] rank;
+	
+	public static void make_set(int v) {
+		parent[v]=new Pair(v,0);
+		rank[v]=0;
+	}
+	
+	public static Pair find_set(int a) {
+		if(a!=parent[a].next) {
+			Pair temp=find_set(parent[a].next);
+			parent[a].next=temp.next;
+			parent[a].relation=(parent[a].relation+temp.relation)%3;
+		}
+		return parent[a];
+	}
+	
+	public static boolean Union_set(int a,int b,int type) {//0 refers to a and b are same 1 for a eats b
+		int z=type;
+		Pair A=find_set(a);
+		Pair B=find_set(b);
+		if(A.next==B.next) {
+			int rel=(A.relation-B.relation)%3;
+			if((rel==1 || rel==-2) && type==1) {
+				return true;
+			}else if((rel==0) && type==0) {
+				return true;
+			}else {
+				return false;
+			}
+		}else {
+			int x=A.relation;
+			int y=B.relation;
+			if(rank[A.next]>rank[B.next]) {
+				parent[B.next]=new Pair(A.next,(x-y-z)%3);
+			}else if(rank[A.next]==rank[B.next]) {
+				parent[B.next]=new Pair(A.next,(x-y-z)%3);
+				rank[A.next]++;
+			}else {
+				parent[A.next]=new Pair(B.next,(y+z-x)%3);
+			}
+		}
+		return true;
+	}
+	
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		out=new PrintWriter(new BufferedOutputStream(System.out));
+		FastReader s=new FastReader();
+		int t=s.nextInt();
+		while(t-->0) {
+			int n=s.nextInt();
+			parent=new Pair[n];
+			rank=new int[n];
+			int k=s.nextInt();
+			int count=0;
+			for(int i=0;i<n;i++) {
+				make_set(i);
+			}
+			while(k-->0) {
+				int type=s.nextInt()-1;
+				int u=s.nextInt()-1;
+				int v=s.nextInt()-1;
+				if(u>=n || v>=n) {
+					count++;
+//					out.println(u+" "+v);
+				}else if(type==1 && u==v){
+					count++;
+//					out.println(u+" "+v);
+				}else {
+					boolean check=Union_set(u, v, type);
+					if(check) {
+						
+					}else {
+						count++;
+//						out.println(u+" "+v);
+					}
+				}
+			}
+			out.println(count);
+		}
+		out.close();
+	}
+
+	public static PrintWriter out;
+	
+	public static class FastReader {
+		BufferedReader br;
+		StringTokenizer st;
+		//it reads the data about the specified point and divide the data about it ,it is quite fast
+		//than using direct 
+
+		public FastReader() {
+			br = new BufferedReader(new InputStreamReader(System.in));
+			//InputStream reads the data and decodes in character stream
+			//It acts as bridge between byte stream and character stream
+		}
+
+		String next() {
+			while (st == null || !st.hasMoreTokens()) {
+				try {
+					st = new StringTokenizer(br.readLine());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			return st.nextToken();
+		}
+
+		int nextInt() {
+			return Integer.parseInt(next());//converts string to integer
+		}
+
+		double nextDouble() {
+			return Double.parseDouble(next());
+		}
+
+		long nextLong() {
+			return Long.parseLong(next());
+		}
+
+		String nextLine() {
+			String str = "";
+			try {
+				str = br.readLine();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return str;
+		}
+	}
+	
+}
