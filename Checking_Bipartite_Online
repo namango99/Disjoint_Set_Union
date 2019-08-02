@@ -1,0 +1,134 @@
+class CheckingBipartiteOnline {
+
+	//Question :- there will be two type of queries 
+	//1) Add edge between vertices u and v
+	//2) Given vertex v- The graph in which vertex v is present,tell whether it is bipartite or not 
+	//This is basically online checking bipartite ... For offline we can directly use dfs and can color the graph
+	//But for online that would be inefficient...So for that we can use dsu
+	
+	//We need to know that graph is not bipartite when it contains any odd length cycle
+	//we have to use dsu and we will store parity(odd or even) from representative of set with each vertex in dsu 
+	//Now there two basic proofs :
+	//   1) When we are adding an edge(u-v) , if the two vertices(composed in edge u,v) have same parity(that means
+	//either length from both side is even or odd) from any particular node than the graph is "not bipartite"
+	//Reason : Since u and v already has an edge and there exist a vertex which is reachable from both nodes
+	//than there exist a cycle...Now if both have same parity than the sum of there distance will surely be 
+	//even(odd+odd=even & even+even=even) .. Now we have to add the edge b/w u and v that's one more hence 
+	//odd(even+1=odd)..This means odd cycle ...this means not bipartite
+	//   2) if we are adding edge between a,b and a ,b belongs to different connected components than we have 
+	// to union both components...let A be representative of a and B be representative of b , and x be parity 
+	// between a and A and y be parity between b and B
+	//than when we combine two components than the smaller rank component will have 
+	//    t= x xor y xor 1  parity from its representative
+	/*          1 represent odd parity and 0 represent even parity
+	 * 			x | y | 1 | Ans
+	 * 			----------------
+	 * 			0 | 0 | 1 | 1    --- when we are given both x and y as even and we are adding another edge between A and B hence distance b/w A and B even + even + 1 = odd
+	 * 			0 |	1 | 1 | 0    --- when we are given one odd and another even than odd + even + 1= even
+	 * 			1 | 0 | 1 | 0    --- when we are given one odd and another even than odd + even + 1= even
+	 * 			1 | 1 | 1 | 1	 --- when we are given both x and y as odd and we are adding another edge between A and B hence distance b/w A and B odd + odd + 1 = odd
+	 * 			
+	 * 			A 				B
+	 * 			 \			     \
+	 * 			  m				  n	        ===> both a and b are at even distance from A and B   x =2 and y=2
+	 * 			 /				   \
+	 *			a 					b
+	 *
+	 * 			Now when we combine both dsu's and consider A with bigger rank
+	 *			
+	 *			A 		
+	 * 			 \		
+	 * 			  m			        ===>When we combine both trees at (a,b) distance A and B is x+y+1=2+2+1=even+even+1=odd
+	 * 			 /			
+	 *			a 		
+	 *			 \
+	 *			  b
+	 *			   \
+	 *				n
+	 *			   /
+	 *			  B				
+	 *
+	 *		After path compression our dsu will look like this
+	 *			A
+	 *			|\
+	 *			m B(its parity is odd(proved above))
+	 *			|  \	
+	 *			a	n
+	 *				 \	
+	 *				  b		
+	 * */
+	// x xor y will give actual parity if first parity was odd and second was even and third was odd again than final parity will be 1^0^1=0(even)
+	public static class Pair{
+		int main;
+		int parity;
+		public Pair(int main,int parity) {
+			this.main=main;
+			this.parity=parity;
+		}
+	}
+	
+	public static Pair[] parent;
+	public static int[] rank;
+	public static boolean[] isBipartite;
+	//0 for even and 1 for odd
+	public static void make_set(int v) {
+		parent[v]=new Pair(v,0);
+		isBipartite[v]=true;
+		rank[v]=0;
+	}
+	
+	public static Pair find_set(int v) {
+		if(v!=parent[v].main) {
+			int parity=parent[v].parity;
+			Pair temp=find_set(parent[v].main);
+			parent[v].main=temp.main;
+			parent[v].parity=temp.parity^parity;
+		}
+		return parent[v];
+	}
+	
+	public static void Union_set(int a,int b) {
+		Pair A=find_set(a);
+		Pair B=find_set(b);
+		if(A.main==B.main) {
+			if(A.parity==B.parity) {
+				isBipartite[A.main]=false;
+			}
+		}else {
+			if(rank[A.main]>rank[B.main]) {
+				parent[B.main]=new Pair(A.main,A.parity^B.parity^1);
+				isBipartite[A.main]&=isBipartite[B.main];
+			}else if(rank[A.main]==rank[B.main]) {
+				parent[B.main]=new Pair(A.main,A.parity^B.parity^1);
+				rank[A.main]++;
+				isBipartite[A.main]&=isBipartite[B.main];
+			}else {
+				parent[A.main]=new Pair(B.main,A.parity^B.parity^1);
+				isBipartite[B.main]&=isBipartite[A.main];
+			}
+		}
+	}
+	
+	public static boolean is_Bipartite(int V) {
+		return isBipartite[find_set(V).main];
+	}
+	
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		int n=5;
+		parent=new Pair[n];
+		rank=new int[n];
+		isBipartite=new boolean[n];
+		for(int i=0;i<n;i++) {
+			make_set(i);
+		}
+		Union_set(0, 1);
+		Union_set(1,2);
+		Union_set(2,4);
+		Union_set(4,3);
+		System.out.println(is_Bipartite(2));
+		Union_set(0,3);
+		System.out.println(is_Bipartite(4));//cycle of length 5 is formed hence not bipartite
+	}
+
+}
