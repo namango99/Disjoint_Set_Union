@@ -1,0 +1,92 @@
+public class Implementation {
+
+	//DSU helps to tell wheather an element is present in a set and helps to combine to distinct sets ...All
+	//in constant time..(average)
+	//There are three operation for DSU
+	//1> Make_Set -- Creates a new set
+	//2> Find_Set -- tells to which set current element belong
+	//3> Union_Set -- Combine two sets together
+	//Since naive implementation is inefficient hence we have two optimizations which will make the 
+	//DSU approximately constant time...that's actually O(alpha(n)) where alpha(n) is inverse Ackermann Function
+	//This function will be smaller than 4 even for 10^600 so pretty much constant time
+	
+	//First Optimization is for Find_Set :(This is called Path Compression) 
+	//Whenever we try to find parent for a particular element we just make parent for elements in the branch 
+	//to the parent of the tree hence whenever we need parent for any of those element it would take only O(1)
+	//time .. This will make find_set to O(log(n))
+	
+	//Second Optimization is for Union_set:(This is Rank/Size Compression)
+	//We combine two sets such that the smaller tree get combined with that of bigger ...This can be done using 
+	//two ways ...Union by rank/size 
+	//For rank -- We consider depth of tree .. the tree having longer depth have higer rank
+	//For size -- We consider number of nodes tree have -- the tree having large number of nodes will have hight value
+	//only second optimization will make the complexity O(log(n)) 
+	
+	//If we use both above optimization we get O(alpha(n)) which approx constant
+	
+	
+	public static int[] parent;
+	public static int[] rank;
+	public static int[] size;
+	
+	public static void make_set(int v) {
+		size[v]=1;
+		rank[v]=0;
+		parent[v]=v;
+	}
+	
+	public static int find_set(int v) {
+		if(v==parent[v])return parent[v];
+		int value=find_set(parent[v]);
+		parent[v]=value;//first optimization
+		return value;
+	}
+	
+	public static void Union_set_Rank(int a,int b) {
+		a=find_set(a);
+		b=find_set(b);
+		if(a!=b) {
+			if(rank[a]>rank[b]) {
+				parent[b]=a;
+			}else if(rank[a]==rank[b]){
+				parent[b]=a;
+				rank[a]++;
+			}else {
+				parent[a]=b;
+			}
+		}
+	}
+	
+	public static void Union_Set_Size(int a,int b) {
+		a=find_set(a);
+		b=find_set(b);
+		if(a!=b) {
+			if(size[a]>size[b]) {
+				parent[b]=a;
+				size[a]+=size[b];
+			}else {
+				parent[a]=b;
+				size[b]+=size[a];
+			}
+		}
+	}
+	
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		int n=5;
+		parent=new int[n];
+		size=new int[n];
+		rank=new int[n];
+		for(int i=0;i<n;i++) {
+			make_set(i);
+		}
+		Union_set_Rank(1, 2);
+		Union_Set_Size(0, 1);
+		Union_set_Rank(3, 4);
+		System.out.println(find_set(0));
+		System.out.println(find_set(4));
+	}
+
+	//Refer to problem section and see paintingSubArrayOffline
+	
+}
