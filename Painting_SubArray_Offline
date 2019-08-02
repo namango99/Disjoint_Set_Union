@@ -1,5 +1,3 @@
-package problems;
-
 public class PaintingSubArrayOffline {
 
 	//Problem Statement : Given a array having color assigned to every element that is 0 .. Now we are given 
