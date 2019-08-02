@@ -1,0 +1,63 @@
+public class DSU_Storing_Distance_Upto_Repre {
+
+	//DSU storing distance upto the representative of that set...
+	
+	public static class Pair{
+		int representative;
+		int distance;
+		public Pair(int repres,int distance) {
+			this.representative=repres;
+			this.distance=distance;
+		}
+	}
+	
+	public static Pair[] parent;
+	public static int[] rank;
+	
+	public static void make_set(int v) {
+		parent[v]=new Pair(v,0);
+		rank[v]=0;
+	}
+	//If we donot use distance variable we cannot apply path compression since then we have to go through
+	//every element in the tree to reach the representative and number of recursion call will tell us 
+	//the distance
+	public static Pair find_set(int v) {//find_set will return two values..1> representative and second distance to representative
+		if(v!=parent[v].representative) {
+			int len=parent[v].distance;//stores distance to next node..
+			Pair temp=find_set(parent[v].representative);//tells the representative of set and distance of it from previous node 
+			parent[v].representative=temp.representative;
+			parent[v].distance=len+temp.distance;//now we are adding our distance to previous node distance to get overall distance from the representative of the set
+		}
+		return parent[v];
+	}
+
+	public static void union_set(int a,int b) {
+		Pair A=find_set(a);
+		Pair B=find_set(b);
+		if(rank[A.representative]>rank[B.representative]) {
+			parent[B.representative]=new Pair(A.representative,1);
+		}else if(rank[A.representative]==rank[B.representative]) {
+			parent[B.representative]=new Pair(A.representative,1);
+			rank[A.representative]++;
+		}else {
+			parent[A.representative]=new Pair(B.representative,1);
+		}
+	}
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		parent=new Pair[6];
+		rank=new int[6];
+		for(int i=0;i<6;i++) {
+			make_set(i);
+		}
+		union_set(0, 1);
+		union_set(0, 2);
+		union_set(2, 3);
+		union_set(4, 5);
+		union_set(1,4);
+		Pair ans=find_set(5);
+		System.out.println(ans.distance);
+	}
+
+}
